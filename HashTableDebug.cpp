@@ -4,8 +4,18 @@
  * Write your tests in this file
  */
 #include <iostream>
+#include <memory>
+
+#include "HashTable.h"
 
 int main() {
     std::cout << "Hello, World!" << std::endl;
-    return 0;
+
+    HashTable s1;;
+
+    s1.insert("Hii", 23);
+    s1.insert("Hello", 34);
+
+
+
 }
