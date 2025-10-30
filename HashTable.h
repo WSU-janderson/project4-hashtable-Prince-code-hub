@@ -86,15 +86,17 @@ size_t capacity() const;
 */
 size_t size() const;
 
- double hashing(std::string key);
-
- double hashing() const;
+ size_t hashing(std::string key) const;
 
  std::vector<size_t> offsets;
 
  std::vector<HashTableBucket> table;
  size_t currentSize = 0;
+ friend std::ostream &operator<<(std::ostream &os, const HashTable &hashTable);
+
 };
+
+
 
 class HashTableBucket {
 
