@@ -14,7 +14,7 @@ public:
 * Only a single constructor that takes an initial capacity for the table is
 * necessary. If no capacity is given, it defaults to 8 initially
 */
-   HashTable(size_t initCapacity = 8);
+ HashTable(size_t initCapacity = 8);
 
 /**
 * Insert a new key-value pair into the table. Duplicate keys are NOT allowed. The
@@ -88,9 +88,11 @@ size_t size() const;
 
  size_t hashing(std::string key) const;
 
- std::vector<size_t> offsets;
+ void resize();
 
+ std::vector<size_t> offsets;
  std::vector<HashTableBucket> table;
+
  size_t currentSize = 0;
  friend std::ostream &operator<<(std::ostream &os, const HashTable &hashTable);
 

@@ -2,7 +2,7 @@
 
 #include <iostream>
 #include <random>
-#include <bits/locale_facets_nonio.h>
+
 
 using namespace std;
 
@@ -34,6 +34,10 @@ bool HashTable::insert(const std::string key, const size_t &value) {
     int hash = hashing(key);
     size_t index = hash;
 
+    if (alpha() >= 0.5) {
+        resize();
+    }
+
     // //giving garbage value and empty string with bucket type ESS to vector
     // for ( i = 0; i < limit; i++ ) {
     //     table.push_back(HashTableBucket());
@@ -42,6 +46,7 @@ bool HashTable::insert(const std::string key, const size_t &value) {
     if (table.at(index).type == HashTableBucket::BucketType::ESS || table.at(index).type ==
         HashTableBucket::BucketType::EAR) {
         table.at(index).load(key, value);
+        currentSize++;
         return true;
         }
 
@@ -61,6 +66,7 @@ bool HashTable::insert(const std::string key, const size_t &value) {
                 break;
             case HashTableBucket::BucketType::ESS:
                 table.at(probe).load(key, value);
+                currentSize++;
                 return true;
             case HashTableBucket::BucketType::EAR:
                 if (emptyIndex == -1) {
@@ -73,6 +79,7 @@ bool HashTable::insert(const std::string key, const size_t &value) {
     if (emptyIndex != -1) {
         table.at(emptyIndex).load(key, value);
         table.at(emptyIndex).type = HashTableBucket::BucketType::Normal;
+        currentSize++;
         return true;
     }
     return false;
@@ -84,6 +91,14 @@ bool HashTable::remove(const std::string &key) {
     int i = 0;
     int hash = hashing(key);
 
+    if (table.at(hash).type == HashTableBucket::BucketType::Normal && table.at(hash).key == key) {
+        table.at(hash).key = "";
+        table.at(hash).value = 0;
+        table.at(hash).type = HashTableBucket::BucketType::EAR;
+        currentSize--;
+        return true;
+    }
+
     for (int j = 0; j < offsets.size(); j++) {
         size_t probe = (hash + offsets[j]) % limit;
 
@@ -93,6 +108,7 @@ bool HashTable::remove(const std::string &key) {
                     table.at(probe).key = "";
                     table.at(probe).value = 0;
                     table.at(probe).type = HashTableBucket::BucketType::EAR;
+                    currentSize--;
                     return true;
                 }
                 break;
@@ -165,25 +181,37 @@ std::optional<size_t> HashTable::get(const std::string &key) const {
 
 size_t &HashTable::operator[](const std::string &key) {
     size_t hash = hashing(key);
-    size_t index = hash % limit;
+
+    if (table.at(hash).type == HashTableBucket::BucketType::Normal && table.at(hash).key == key) {
+        return table.at(hash).value;
+    }
 
     for (size_t i = 0; i < offsets.size(); i++) {
-        index = (hash + offsets[i]) % limit;
-        if (table.at(index).type == HashTableBucket::BucketType::Normal && table.at(index).key == key) {
-            return table.at(index).value;
+        hash = (hash + offsets[i]) % limit;
+        if (table.at(hash).type == HashTableBucket::BucketType::Normal && table.at(hash).key == key) {
+            return table.at(hash).value;
         }
     }
+
+    throw std::out_of_range("No such key");
 }
 
 
 
 std::vector<std::string> HashTable::keys() const {
+    std::vector<std::string> keys;
 
+    for (size_t i = 0; i < table.size(); i++) {
+        if (table.at(i).type == HashTableBucket::BucketType::Normal) {
+            keys.push_back(table.at(i).key);
+        }
+    }
 
+    return keys;
 }
 
 double HashTable::alpha() const {
-    return false;
+    return static_cast<double>(currentSize) / static_cast<double>(limit);
 }
 
 size_t HashTable::capacity() const {
@@ -191,6 +219,7 @@ size_t HashTable::capacity() const {
 }
 
 size_t HashTable::size() const {
+    return currentSize;
 }
 
 size_t HashTable::hashing(const std::string key) const {
@@ -206,12 +235,47 @@ size_t HashTable::hashing(const std::string key) const {
 ostream &operator <<(ostream &os, const HashTable &hashTable) {
     for (size_t i = 0; i < hashTable.table.size(); i++) {
         if (hashTable.table[i].type == HashTableBucket::BucketType::Normal) {
-            os << "Bucket " << i << hashTable.table[i];
+            os << "Bucket " << i << hashTable.table[i] << endl;
         }
     }
 
     return os;
 }
+
+void HashTable::resize() {
+    limit*=2;
+
+    std::vector<HashTableBucket> old_table = table;
+
+    table.clear();
+    table.resize(limit, HashTableBucket());
+
+    offsets.clear();
+    while (offsets.size() < limit-1) {
+        bool duplicate = false;
+        int random = 1 + rand() % limit;
+        for (int i = 0; i < offsets.size(); i++) {
+            if (random == offsets[i]) {
+                duplicate = true;
+                break;
+            }
+        }
+        if (!duplicate) {
+            offsets.push_back(random);
+        }
+
+    }
+    currentSize = 0;
+
+    for (int i = 0; i < old_table.size(); i++) {
+        if (old_table[i].type == HashTableBucket::BucketType::Normal) {
+            insert(old_table[i].key,old_table[i].value);
+        }
+    }
+
+}
+
+
 
 /**
 * The default constructor can simply set the bucket type to ESS.
@@ -247,6 +311,8 @@ void HashTableBucket::load(const std::string &key, const size_t &value) {
 * if it has had data placed in it or not.
 */
 bool HashTableBucket::isEmpty() const {
+
+    return type == BucketType::ESS || type == BucketType::EAR;
 
 }
 /**

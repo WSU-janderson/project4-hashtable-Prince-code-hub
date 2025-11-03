@@ -11,8 +11,8 @@
 using namespace std;
 
 int main() {
-    cout << "Hello, World!" << endl;
     srand(time(0));
+    cout << "Hello, World!" << endl;
     HashTable s1;;
 
     s1.insert("Hii", 23);
@@ -23,8 +23,14 @@ int main() {
     s1.remove("Hello");
     s1.remove("Hlo");
 
-    s1.contains("re");
-    s1.get("nah");
+
+    cout << s1.contains("re");
+
+    for (const auto& k : s1.keys()) {
+        std::cout << k << " ";
+    }
+    cout << endl;
+
 
     cout << s1 << endl;
 
