@@ -1,22 +1,27 @@
-
+// Name: Prince Patel
+// Project: HashTable Implementation
+//File: HashTable.h
 #include <string>
 #include <vector>
 #include <optional>
-
+//forward declaration
 class HashTableBucket;
 enum class BucketType;
 
 class HashTable{
 
 public:
- size_t limit;
+ //table's limit
+ size_t capacity_;
 /**
 * Only a single constructor that takes an initial capacity for the table is
 * necessary. If no capacity is given, it defaults to 8 initially
 */
  HashTable(size_t initCapacity = 8);
+//To generate random offsets for table
+ void generateOffsets(size_t limit);
 
-/**
+ /**
 * Insert a new key-value pair into the table. Duplicate keys are NOT allowed. The
 * method should return true if the insertion was successful. If the insertion was
 * unsucessful, such as when a duplicate is attempted to be inserted, the method
@@ -85,15 +90,18 @@ size_t capacity() const;
 * time complexity for this method must be O(1)
 */
 size_t size() const;
-
+//Hash function
  size_t hashing(std::string key) const;
-
+//Resize table when load factor high
  void resize();
-
+//offsets random probing,
  std::vector<size_t> offsets;
+ // Table of buckets
  std::vector<HashTableBucket> table;
 
  size_t currentSize = 0;
+
+ //allow printing
  friend std::ostream &operator<<(std::ostream &os, const HashTable &hashTable);
 
 };
@@ -103,11 +111,17 @@ size_t size() const;
 class HashTableBucket {
 
  public:
+ //marking types explicitly
  enum class BucketType {Normal, ESS , EAR};
+//default construction
  HashTableBucket();
+ // Used when directly inserting a key-value pair into a bucket
  HashTableBucket(const std::string &key, const size_t &value);
+ //load function
  void load(const std::string &key, const size_t &value);
+ //Checks if the bucket is empty
  bool isEmpty() const;
+
  std::string key;
  size_t value;
  BucketType type;

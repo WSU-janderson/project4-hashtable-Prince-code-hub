@@ -4,15 +4,14 @@
  * Write your tests in this file
  */
 #include <iostream>
-#include <memory>
 
 #include "HashTable.h"
 
 using namespace std;
 
 int main() {
-    srand(time(0));
     cout << "Hello, World!" << endl;
+
     HashTable s1;;
 
     s1.insert("Hii", 23);
@@ -33,7 +32,4 @@ int main() {
 
 
     cout << s1 << endl;
-
-
-
 }
